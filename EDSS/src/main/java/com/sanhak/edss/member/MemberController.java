@@ -18,7 +18,7 @@ public class MemberController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Member> registerUser(@RequestBody Member member) {
+    public ResponseEntity<Member> registerMember(@RequestBody Member member) {
         try {
             Member _member = memberService.regiserMember(member);
             return new ResponseEntity<>(_member, HttpStatus.CREATED);

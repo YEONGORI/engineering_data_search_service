@@ -37,3 +37,6 @@ build/
 
 ### DWG 파일 제외 ###
 src/**/*.dwg
+
+### POM.XML 제외 ###
+pom.xml
