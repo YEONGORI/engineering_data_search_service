@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 public class CadServiceImpl implements CadService {
     private final CadRepository cadRepository;
 
-    public Cad saveCadFile(Cad cad) {
-        cadRepository.save(cad);
+    public Cad saveCadFile(String s3Url) {
+
+        cadRepository.save();
         return cad;
     }
 }

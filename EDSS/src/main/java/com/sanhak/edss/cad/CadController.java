@@ -30,9 +30,9 @@ public class CadController {
     }
 
     @PostMapping("/data")
-    public ResponseEntity<Cad> createCadDatas(@RequestBody Cad cad) {
+    public ResponseEntity<Cad> createCadDatas(@RequestBody String s3Url) {
         try {
-            Cad _cad = cadService.saveCadFile(cad);
+            Cad _cad = cadService.saveCadFile(s3Url);
             return new ResponseEntity<>(_cad, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
