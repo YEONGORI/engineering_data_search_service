@@ -9,6 +9,7 @@ import com.aspose.cad.fileformats.cad.cadobjects.CadText;
 import org.springframework.stereotype.Component;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -73,4 +74,5 @@ public class AsposeUtils {
         }
         return index;
     }
+
 }
