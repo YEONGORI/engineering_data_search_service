@@ -22,7 +22,7 @@ public class CadServiceImpl implements CadService {
             s3Utils.downloadFolder(mainCategory[3]);
             Map<String, String[]> fileInfo = asposeUtils.searchCadFleInDataDir(mainCategory[3]);
             for (Map.Entry<String, String[]> entry: fileInfo.entrySet()) {
-                Cad cad = new Cad(mainCategory[3], entry.getValue()[0], entry.getKey(), entry.getValue()[1]);
+                Cad cad = new Cad(mainCategory[3], entry.getValue()[0], entry.getKey(), entry.getValue()[1], entry.getValue()[2]);
                 cadRepository.save(cad);
             }
         } catch (IOException e) {

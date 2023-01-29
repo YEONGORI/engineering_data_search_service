@@ -1,6 +1,5 @@
 package com.sanhak.edss.cad;
 
-import co.elastic.clients.elasticsearch.nodes.Http;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -16,17 +16,18 @@ public class Cad {
     private String title;
     private String index;
 
+    private String imageURL;
     //private ByteArrayOutputStream JpegImage;
 
 
 
 
-    public Cad(String mainCategory, String subCategory, String title, String index ) {
+    public Cad(String mainCategory, String subCategory, String title, String index, String imageURL) {
         this.mainCategory = mainCategory;
         this.subCategory = subCategory;
         this.title = title;
         this.index = index;
-        //this.JpegImage = Image;
+        this.imageURL=imageURL;
     }
 
     @Override
@@ -37,6 +38,7 @@ public class Cad {
                 "\n\tsubCategory=" + subCategory +
                 "\n\ttitle=" + title +
                 "\n\tindex=" + index +
+                "\n\timageURL=" + imageURL +
                 "]";
     }
 }

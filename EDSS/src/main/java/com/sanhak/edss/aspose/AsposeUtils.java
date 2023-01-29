@@ -1,14 +1,19 @@
 package com.sanhak.edss.aspose;
 
+import com.aspose.cad.Image;
 import com.aspose.cad.fileformats.cad.CadImage;
 import com.aspose.cad.fileformats.cad.cadconsts.CadEntityTypeName;
 import com.aspose.cad.fileformats.cad.cadobjects.CadBaseEntity;
 import com.aspose.cad.fileformats.cad.cadobjects.CadBlockEntity;
 import com.aspose.cad.fileformats.cad.cadobjects.CadMText;
 import com.aspose.cad.fileformats.cad.cadobjects.CadText;
+import com.aspose.cad.imageoptions.JpegOptions;
+import com.sanhak.edss.s3.S3Utils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class AsposeUtils {
+    private final S3Utils s3Utils;
     private static final String dataDir = setDataPath();
 
     public static String setDataPath() {
@@ -38,8 +45,12 @@ public class AsposeUtils {
                         String fileName = file.getFileName().toString();
                         String filePath = file.toAbsolutePath().toString();
                         String fileIndex = extractTextInCadFile(filePath);
+                        ByteArrayOutputStream outputStream = CadToJpeg(filePath);
+
+                        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                        String S3url = s3Utils.putS3(filePath, inputStream);
                         filePath = filePath.substring(filePath.indexOf(dir), filePath.indexOf(fileName));
-                        fileInfo.put(fileName, new String[]{filePath, fileIndex});
+                        fileInfo.put(fileName, new String[]{filePath, fileIndex, S3url});
                     }
                     return FileVisitResult.CONTINUE;
                 }
@@ -73,6 +84,19 @@ public class AsposeUtils {
             }
         }
         return index;
+    }
+
+    public static ByteArrayOutputStream CadToJpeg(String fileName) {
+        try {
+            String tmp = dataDir + "CadToJpeg" + File.separator;
+            Image cadImage = Image.load(fileName);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            cadImage.save(stream, new JpegOptions());
+            return stream;
+        }catch(Exception e){
+            System.out.println("error");
+            return null;
+        }
     }
 
 }
