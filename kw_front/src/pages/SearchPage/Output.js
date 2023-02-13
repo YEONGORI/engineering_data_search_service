@@ -1,8 +1,31 @@
 import { AiOutlineArrowUp, AiOutlineArrowDown } from "react-icons/ai";
 import cryptoJs from "crypto-js";
-function Output({ output, setOutput }) {
+
+function Output({ output, setOutput, highlightIndex }) {
   const REGION = "ap-northeast-2";
   const S3_BUCKET = "dwg-upload";
+
+  //////////////////////////////////////////////////////////
+  const highlightedText = (text, query) => {
+    if (query !== "" && text.includes(query)) {
+      const parts = text.split(new RegExp(`(${query})`, "gi"));
+
+      return (
+        <>
+          {parts.map((part, index) =>
+            part.toLowerCase() === query.toLowerCase() ? (
+              <mark key={index}>{part}</mark>
+            ) : (
+              part
+            )
+          )}
+        </>
+      );
+    }
+
+    return text;
+  };
+  //////////////////////////////////////////////////////////
 
   const listitem = (filelist) => {
     const result = [];
@@ -22,6 +45,14 @@ function Output({ output, setOutput }) {
       const imgURL = decipher.toString(cryptoJs.enc.Utf8);
       ///////////////////////////////////////////////////////////////
 
+      let indexlist = filelist[i].index.split("|");
+      let indextmplist = [];
+      for (let j = 0; j < indexlist.length; j++) {
+        if (indexlist[j].includes(highlightIndex)) {
+          indextmplist.push(indexlist[j]);
+        }
+      }
+
       result.push(
         <a
           href={fileURL}
@@ -35,12 +66,18 @@ function Output({ output, setOutput }) {
               /*filelist[i].fileimg*/
             }
           />
+          <div className=" w-full  h-[10%] border-b text-[14px] break-all truncate hover:z-10 hover:overflow-y-auto hover:whitespace-normal hover:h-[40%] hover:border hover:border-black ">
+            인덱스: {highlightedText(indextmplist.join(","), highlightIndex)}
+          </div>
           <div className=" w-full  h-[10%] border-b text-[14px] break-all truncate hover:z-10 hover:overflow-y-auto hover:whitespace-normal hover:h-[40%] hover:border hover:border-black">
-            제목: {filelist[i].title}
+            제목: {highlightedText(filelist[i].title, highlightIndex)}
           </div>
           <div className=" w-full h-[10%] border-b text-[14px] break-all truncate  hover:z-10 hover:overflow-y-auto hover:whitespace-normal hover:h-[40%] hover:border hover:border-black">
             경로:{" "}
-            {`${filelist[i].mainCategory}${filelist[i].subCategory}/${filelist[i].title}`}
+            {highlightedText(
+              `${filelist[i].mainCategory}${filelist[i].subCategory}/${filelist[i].title}`,
+              highlightIndex
+            )}
           </div>
 
           <div className=" w-full h-[10%] border-b text-[14px] break-all truncate  hover:z-10 hover:overflow-y-auto hover:whitespace-normal hover:h-[40%] hover:border hover:border-black">
@@ -174,3 +211,4 @@ function Output({ output, setOutput }) {
 }
 
 export default Output;
+
