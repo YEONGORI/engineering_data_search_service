@@ -1,33 +1,17 @@
 package com.sanhak.edss.cad;
 
-import ch.qos.logback.core.filter.Filter;
-import com.aspose.cad.internal.F.Q;
-import com.mongodb.client.model.Filters;
 import com.sanhak.edss.aspose.AsposeUtils;
 import com.sanhak.edss.s3.S3Utils;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.io.FileUtils;
-import org.bson.conversions.Bson;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-
-import javax.imageio.spi.ServiceRegistry;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
 
 
 @RequiredArgsConstructor
@@ -36,7 +20,6 @@ import java.util.stream.Stream;
 public class CadServiceImpl implements CadService {
 
     private final CadRepository cadRepository;
-    @Autowired
     public final MongoTemplate mongoTemplate;
     private final S3Utils s3Utils;
     private final AsposeUtils asposeUtils;
@@ -53,8 +36,6 @@ public class CadServiceImpl implements CadService {
 
             s3Utils.downloadFolder(folder);
 
-            String existDir = AsposeUtils.dataDir+folder;
-
             Map<String, String[]> fileInfo = asposeUtils.searchCadFleInDataDir(folder);
 
             System.out.println("cadServiceimpl222");
@@ -65,68 +46,21 @@ public class CadServiceImpl implements CadService {
                 //cadRepository.save(cad);
                 mongoTemplate.insert(cad, "cad");
             }
-            /*System.out.println("cadserviceimpl333");
-            try{
-                File file = new File(AsposeUtils.dataDir);
-                FileUtils.deleteDirectory(file);
-            }catch (IOException e){
-                e.printStackTrace();
-            }*/
-
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public void remove(File file) throws IOException {
-        System.out.println(file.toString());
-        if (file.isDirectory()) {
-            removeDirectory(file);
-        } else {
-            file.delete();
-        }
-    }
-    public void removeDirectory(File directory) throws IOException {
-        System.out.println(directory.toString());
-        File[] files = directory.listFiles();
-        for (File file : files) {
-            System.out.println(file.toString());
-            file.delete();
-        }
-        directory.delete();
-    }
-
 
 
     public List<Cad> searchCadFile(String searchText) {
 
         try {
-            if (searchText == "")
+            if (searchText.equals(""))
                 return null;
-            String[] eachText = searchText.split(" ");
-
-            Query query = new Query();
-            Criteria criteria = new Criteria();
-
-            String Col[] = {"title", "mainCategory" ,"subCategory", "index"};
-            Query query_qrr[][] = new Query[Col.length][eachText.length];
-
-            for(int i=0;i<Col.length;i++){
-                for(int j=0;j<eachText.length;j++){
-                    query_qrr[i][j] = new Query();
-                    query_qrr[i][j].addCriteria(Criteria.where(Col[i]).regex(eachText[j]));
-                }
-
-            }
-            List<Cad> list = mongoTemplate.find(query_qrr[0][0],Cad.class,"cad");
-            for(int i=0;i<eachText.length;i++){
-                list = Stream.concat(list.stream(),mongoTemplate.find(query_qrr[0][i],Cad.class,"cad").stream()).distinct().toList();
-                list = Stream.concat(list.stream(),mongoTemplate.find(query_qrr[1][i],Cad.class,"cad").stream()).distinct().toList();
-                list = Stream.concat(list.stream(),mongoTemplate.find(query_qrr[2][i],Cad.class,"cad").stream()).distinct().toList();
-                list = Stream.concat(list.stream(),mongoTemplate.find(query_qrr[3][i],Cad.class,"cad").stream()).distinct().toList();
-            }
-            return list;
+            System.out.println(searchText);
+            TextCriteria criteria = TextCriteria.forDefaultLanguage().matching(searchText);
+            Sort sort = Sort.by(Sort.Direction.DESC, "score");
+            return cadRepository.findAllBy(criteria, sort);
         } catch (Exception e) {
             e.printStackTrace();
         }

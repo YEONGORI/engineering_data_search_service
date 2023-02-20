@@ -2,7 +2,9 @@ package com.sanhak.edss.cad;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.TextScore;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
@@ -16,8 +18,11 @@ public class Cad {
     private String mainCategory;
     private String subCategory;
     private String title;
+    @TextIndexed
     private String index;
     private String s3Url;
+    @TextScore
+    private Float textScore;
 
     private String createdAt;
 
@@ -30,17 +35,5 @@ public class Cad {
         this.index = index;
         this.s3Url = s3Url;
         this.createdAt = createdAt;
-    }
-
-    @Override
-    public String toString() {
-        return "Cad File[" +
-                "\n\tid=" + id +
-                "\n\tmainCategory=" + mainCategory +
-                "\n\tsubCategory=" + subCategory +
-                "\n\ttitle=" + title +
-                "\n\tindex=" + index +
-                "\n\ts3Url=" + s3Url +
-                "]";
     }
 }
