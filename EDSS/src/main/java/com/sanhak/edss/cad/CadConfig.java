@@ -13,6 +13,8 @@ import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.core.index.TextIndexDefinition;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 
 @Configuration
 @PropertySource(value = "application.properties")
@@ -24,7 +26,7 @@ public class CadConfig {
     private String databaseName;
 
     @Bean
-    public MongoClient mongoClient(){
+    public MongoClient mongoClient() {
         ConnectionString connectionString1 = new ConnectionString(connectionString);
         MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString1)
@@ -34,7 +36,12 @@ public class CadConfig {
     }
 
     @Bean
-    public MongoTemplate mongoTemplate(){
-        return new MongoTemplate(mongoClient(),databaseName);
+    public MongoTemplate mongoTemplate() {
+        return new MongoTemplate(mongoClient(), databaseName);
     }
+
+
+
+
+
 }

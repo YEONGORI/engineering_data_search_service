@@ -1,7 +1,9 @@
 package com.sanhak.edss.s3;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.MultipleFileDownload;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferProgress;
@@ -93,6 +95,19 @@ public class S3Utils {
         }
         return encryptStr;
     }
+    public boolean getS3(String s3Url) throws IOException{
+        S3Object o = amazonS3Client.getObject(new GetObjectRequest(bucket, s3Url));
+        
+    }
+
+
+    public void deleteS3File(String FilePath){
+        boolean isExistObject = amazonS3Client.doesObjectExist(bucket,FilePath);
+        if(isExistObject){
+            amazonS3Client.deleteObject(bucket,FilePath);
+        }
+    }
+
     public String encryptAES256(String fileName) throws  Exception{
         Cipher cipher = Cipher.getInstance(algo);
         SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(),"AES");

@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 
 @RequiredArgsConstructor
@@ -46,9 +48,10 @@ public class AsposeUtils {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException{
                     System.out.println("visitFile");
                     if (!Files.isDirectory(file) && file.getFileName().toString().contains(".dwg")) {
+
                         String fileName = file.getFileName().toString();
                         String filePath = file.toAbsolutePath().toString();
-                        String fileIndex = extractTextInCadFile(filePath);
+                        String fileIndex = extractCadIndex(filePath);
                         System.out.println("complete extract");
                         ByteArrayOutputStream bos = CadToJpeg(filePath);
                         System.out.println("complete cadToJpeg");
@@ -68,34 +71,37 @@ public class AsposeUtils {
         return fileInfo;
     }
 
-    public static String extractTextInCadFile(String fileName) {
-
-        System.out.println("extractTextInCadFile");
-
-        String index = "";
+    private String extractCadIndex(String cad) {
         try {
-            CadImage cadImage = (CadImage) CadImage.load(fileName);
+            Set<String> index = new HashSet<>();
+            CadImage cadImage = (CadImage) CadImage.load(cad);
             for (CadBlockEntity blockEntity : cadImage.getBlockEntities().getValues()) {
                 for (CadBaseEntity entity : blockEntity.getEntities()) {
                     if (entity.getTypeName() == CadEntityTypeName.TEXT) {
-                        CadText childObjectText = (CadText)entity;
-                        index = index + childObjectText.getDefaultValue() + "| ";
+                        CadText cadText = (CadText) entity;
+                        index.add(filterCadIndex(cadText.getDefaultValue()));
                     }
-
                     else if (entity.getTypeName() == CadEntityTypeName.MTEXT) {
-                        CadMText childObjectText = (CadMText)entity;
-                        index += childObjectText.getText();
-                        index += "| ";
+                        CadMText cadMText = (CadMText) entity;
+                        index.add(filterCadIndex(cadMText.getText()));
                     }
-
                 }
             }
-            return index;
+            return String.join(" | ", index);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return "";
     }
+
+    private String filterCadIndex(String index) {
+        String filtered = index.replace(" ", "");
+        int numCnt = (int) filtered.chars().filter(c -> c >= '0' && c <= '9').count();
+        if (numCnt >= filtered.length() / 2)
+            return "";
+        return filtered;
+    }
+
 
     public ByteArrayOutputStream CadToJpeg(String filePath) {
         System.out.println("CadToJpeg");
@@ -113,23 +119,34 @@ public class AsposeUtils {
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
-            ExecutorService executor = Executors.newCachedThreadPool();
-            Callable<Object> task = new Callable<Object>() {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Callable<ByteArrayOutputStream> task = new Callable<ByteArrayOutputStream>() {
                 @Override
-                public Object call() throws Exception {
+                public ByteArrayOutputStream call() throws Exception {
                     cadImage.save(bos, options);
                     System.out.println("success");
+                    cadImage.close();
                     return bos;
                 }
             };
-            Future<Object> future = executor.submit(task);
+            Future<ByteArrayOutputStream> future = executor.submit(task);
             executor.shutdown();
-            try {
-                Object result = future.get(10, TimeUnit.SECONDS);
-            } catch (TimeoutException | ExecutionException | InterruptedException time_e) {
-                time_e.printStackTrace();
+            try{
+                try{
+                    Object result = future.get(10, TimeUnit.SECONDS);
+                }catch(TimeoutException e){
+                    System.out.println("timeout");
+                    cadImage.close();
+                    return null;
+                }
+            }catch(InterruptedException e){
+                cadImage.close();
+                return null;
+            }catch (ExecutionException e){
+                cadImage.close();
                 return null;
             }
+
             return bos;
         }catch (Exception e){
             System.out.println("cadtoimage error");
@@ -137,4 +154,5 @@ public class AsposeUtils {
             return null;
         }
     }
+
 }
