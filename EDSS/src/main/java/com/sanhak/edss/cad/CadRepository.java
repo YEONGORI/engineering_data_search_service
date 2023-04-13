@@ -14,4 +14,5 @@ public interface CadRepository extends MongoRepository<Cad, String> {
     List<Cad> findAllByMainCategoryContains(String searchText);
     List<Cad> findAllBySubCategoryContains(String searchText);
 
+    List<Cad> findAllBy(TextCriteria criteria, Sort sort);
 }
