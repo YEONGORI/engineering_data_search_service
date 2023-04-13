@@ -38,4 +38,28 @@ public class CadController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/delete")
+    public ResponseEntity<HttpStatus> deleteData(@RequestParam List<String> DelList){
+        try{
+            cadService.deleteFile(DelList);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch(Exception e){
+            System.out.println("Delete error");
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/modify")//단일 파일 수정하는 경우, 디렉터리 전체 수정하는 경우 나눠야 함.
+    public ResponseEntity<HttpStatus> modifyData(@RequestParam String s3Url){
+        try{
+            cadService.modifyFile(s3Url);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch(Exception e){
+            System.out.println("Modify error");
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 }
