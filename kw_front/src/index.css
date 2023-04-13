@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.background {
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.kwlogosize {
+  width: 300px;
+  height: 100px;
+  overflow: hidden;
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+input[type="date"]::before {
+  content: attr(data-placeholder);
+  width: 100%;
+}
+
+input[type="date"]:focus::before,
+input[type="date"]:valid::before {
+  display: none;
+}
+
+.depth-list__item.depthColor-01.current::before,
+.depth-list__item.depthColor-01.fixedCurrent::before {
+  background-color: rgb(124 58 237);
+}
+.depth-list__item.depthColor-02.current::before,
+.depth-list__item.depthColor-02.fixedCurrent::before {
+  background-color: rgb(29 78 216);
+}
+.depth-list__item.current::before,
+.depth-list__item.fixedCurrent::before {
+  content: "";
+  position: absolute;
+  left: 37%;
+  bottom: -20px;
+  transform: translate(-50%, 0);
+  width: calc(15% - 50px);
+  height: 5px;
+  padding: 0 4px;
+  border-radius: 3px 5px 0 0;
+}
