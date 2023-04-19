@@ -5,6 +5,9 @@ import SearchPage from "./pages/SearchPage/SearchPage";
 import UploadPage from "./pages/UploadPage/UploadPage";
 import DefaultPage from "./pages/Defualtpage/DefualtPage";
 import MyPage from "./pages/MyPage/MyPage";
+import StorePage from "./pages/StorePage/StorePage";
+import AuthorityPage from "./pages/AuthorityPage/AuthorityPage";
+
 import Modal from "./common/Modal";
 import PrivateRoute from "./PrivateRoute";
 import AdminPrivateRoute from "./common/AdminPrivateRoute";
@@ -110,6 +113,27 @@ function Router() {
                   />
                 }
               />
+
+              <Route
+                path="/store"
+                element={
+                  <PrivateRoute
+                    authenticated={auth}
+                    component={<StorePage auth={auth} />}
+                  />
+                }
+              />
+
+              <Route
+                path="/authority"
+                element={
+                  <PrivateRoute
+                    authenticated={auth}
+                    component={<AuthorityPage auth={auth} />}
+                  />
+                }
+              />
+
               <Route
                 path="/profile"
                 element={

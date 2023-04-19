@@ -26,7 +26,7 @@ function Navigation({
               className=" mx-[100px] flex justify-center flex-col "
             >
               <div className="hover:border-b-[3px] hover:border-violet-600 h-full w-full text-[20px] flex items-center font-bold hover:text-violet-600  justify-center  ">
-                파일 업로드
+                프로젝트 업로드
               </div>
             </NavLink>
 
@@ -39,6 +39,28 @@ function Navigation({
             >
               <div className="hover:border-b-[3px] hover:border-blue-700 h-full w-full text-[20px] flex items-center font-bold hover:text-blue-700  justify-center ">
                 파일 검색
+              </div>
+            </NavLink>
+            <NavLink
+              to="/store"
+              onClick={() => {
+                setPageIndex(3);
+              }}
+              className=" mx-[100px] flex justify-center flex-col "
+            >
+              <div className="hover:border-b-[3px] hover:border-yellow-500 h-full w-full text-[20px] flex items-center font-bold hover:text-yellow-500  justify-center ">
+                프로젝트 저장소
+              </div>
+            </NavLink>
+            <NavLink
+              to="/authority"
+              onClick={() => {
+                setPageIndex(4);
+              }}
+              className=" mx-[100px] flex justify-center flex-col "
+            >
+              <div className="hover:border-b-[3px] hover:border-red-700 h-full w-full text-[20px] flex items-center font-bold hover:text-red-700  justify-center ">
+                프로젝트 권한설정
               </div>
             </NavLink>
           </div>
