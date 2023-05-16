@@ -7,4 +7,6 @@ public interface CadService {
     List<Cad> searchCadFile(String searchText);
     void deleteFile(List<String> DelList);
     void modifyFile(String s3Url);
+    List<String> ViewStructure(String bucket, String prefix);
+
 }

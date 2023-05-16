@@ -1,10 +1,15 @@
 package com.sanhak.edss.cad;
 
+import com.sanhak.edss.s3.S3Utils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -12,6 +17,7 @@ import java.util.List;
 @RequestMapping("/cad")
 public class CadController {
     private final CadServiceImpl cadService;
+    private final S3Utils s3Utils;
 
     @GetMapping("/data")
     public ResponseEntity<List<Cad>> getCadDatas(@RequestParam String searchText) {
@@ -59,6 +65,22 @@ public class CadController {
             System.out.println("Modify error");
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/store/**")
+    public ResponseEntity<List<String>> viewPath(HttpServletRequest request){
+        List<String> result;
+        try{
+            String tmp = URLDecoder.decode(request.getRequestURI(),"UTF-8");
+            String[] split = tmp.split("/cad/store");
+            String prefix = split.length < 2 ? "" : split[1].substring(1);
+            result = cadService.ViewStructure(s3Utils.bucket, prefix);
+            return new ResponseEntity<>(result,HttpStatus.OK);
+        }catch(Exception e){
+            System.out.println("viewPath error");
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
 

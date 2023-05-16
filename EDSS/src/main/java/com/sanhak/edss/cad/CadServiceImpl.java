@@ -1,49 +1,34 @@
 package com.sanhak.edss.cad;
 
-import ch.qos.logback.core.filter.Filter;
-import com.aspose.cad.internal.F.Q;
-import com.aspose.cad.internal.F.T;
-import com.mongodb.client.model.Filters;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.sanhak.edss.aspose.AsposeUtils;
+import com.sanhak.edss.s3.S3Config;
 import com.sanhak.edss.s3.S3Utils;
-import com.sun.tools.javac.Main;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.bson.conversions.Bson;
-import org.bson.json.JsonObject;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.index.TextIndexDefinition;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.TextCriteria;
-import org.springframework.data.mongodb.core.query.TextQuery;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.spi.ServiceRegistry;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
-import static java.lang.Thread.sleep;
 
 
 @RequiredArgsConstructor
 @Service
 @Component
 public class CadServiceImpl implements CadService {
-
     @Autowired
     private final CadRepository cadRepository;
     @Autowired
@@ -51,6 +36,7 @@ public class CadServiceImpl implements CadService {
     private final S3Utils s3Utils;
     private final AsposeUtils asposeUtils;
 
+    private final S3Config s3Config;
 
     public void saveCadFile(String dir) {
         try {
@@ -70,9 +56,7 @@ public class CadServiceImpl implements CadService {
             System.out.println("cadServiceimpl222");
             for (Map.Entry<String, String[]> entry: fileInfo.entrySet()) {
                 String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-                Cad cad = new Cad(author, folder, entry.getValue()[0], entry.getValue()[1], entry.getKey(), entry.getValue()[2], date);
-
+                Cad cad = new Cad(entry.getKey(), author, folder, entry.getValue()[0], entry.getValue()[1], entry.getValue()[2], entry.getValue()[3], date);
                 cadRepository.save(cad);
 
             }
@@ -100,9 +84,9 @@ public class CadServiceImpl implements CadService {
             System.out.println(eachText[0]);
 
 
-            Query query = TextQuery.queryText(TextCriteria.forDefaultLanguage().notMatching(searchText)).sortByScore();
-            List<Cad> tmp = mongoTemplate.find(query,Cad.class,"cad");
-            System.out.println(tmp.toString());
+            //Query query = TextQuery.queryText(TextCriteria.forDefaultLanguage().notMatching(searchText)).sortByScore();
+            //List<Cad> tmp = mongoTemplate.find(query,Cad.class,"cad");
+            //System.out.println(tmp.toString());
 
             //extCriteria criteria = TextCriteria.forDefaultLanguage().matchingPhrase(s)
 
@@ -171,11 +155,12 @@ public class CadServiceImpl implements CadService {
                     .build();
 */
             Sort sort = Sort.by(Sort.Direction.DESC,"score");
-            TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingAny("/^"+searchText+"/^");
+            TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingAny("/%"+searchText+"/%");
             //TextQuery textQuery = new TextQuery(criteria);
             //textQuery.sortByScore();
             List<Cad> result = cadRepository.findAllBy(criteria, sort);
             //List<Cad> result = cadRepository.findAllByTitleOrIndexOrMainCategoryOrSubCategoryContains(eachText[0], eachText[0], eachText[0], eachText[0]);
+            System.out.println(searchText);
             System.out.println(result.toString());
             /*for (int i=1; i < eachText.length; i++) {
                 /*Stream.concat(result.stream(), cadRepository.findAllByTitleContains(eachText[i]).stream()).distinct().toList();
@@ -218,4 +203,33 @@ public class CadServiceImpl implements CadService {
 
     }
 
+    public List<String> ViewStructure(String bucket, String prefix) {
+        List<String> fileNames = new ArrayList<>();
+        ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
+        listObjectsRequest.setBucketName(bucket);
+        if (!prefix.equals("")) {
+            listObjectsRequest.setPrefix(prefix + "/");
+        }
+        listObjectsRequest.setDelimiter("/");
+        ObjectListing s3Objects;
+        String fileName;
+        do {
+            s3Objects = s3Config.amazonS3().listObjects(listObjectsRequest);
+            for (String commonPrefix : s3Objects.getCommonPrefixes()) {
+                if (!prefix.equals("")) {
+                    String[] split = commonPrefix.split("/");
+                    fileName = split[split.length-1]+"/";
+                } else {
+                    fileName = commonPrefix;
+                }
+                fileNames.add(fileName);
+            }
+
+            for (S3ObjectSummary objectSummary : s3Objects.getObjectSummaries()) {
+                fileNames.add(objectSummary.getKey());
+            }
+            listObjectsRequest.setMarker(s3Objects.getNextMarker());
+        } while (s3Objects.isTruncated());
+        return fileNames;
+    }
 }

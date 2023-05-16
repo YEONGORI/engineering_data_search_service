@@ -32,7 +32,8 @@ public class Cad {
     private String createdAt;
 
 
-    public Cad(String author, String mainCategory, String subCategory, String title, String index, String s3Url, String createdAt) {
+    public Cad(String id, String author, String mainCategory, String subCategory, String title, String index, String s3Url, String createdAt) {
+        this.id=id;
         this.author = author;
         this.mainCategory = mainCategory;
         this.subCategory = subCategory;
